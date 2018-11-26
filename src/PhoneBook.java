@@ -11,7 +11,7 @@ public class PhoneBook extends Application {
         Parent root = FXMLLoader.load(getClass().getResource("View.fxml"));
         Scene scene = new Scene(root);
         stage.setTitle("Telefonkönyv");
-        stage.setHeight(600);
+        stage.setHeight(630);
         stage.setWidth(650);
         stage.setScene(scene);
         stage.show();
