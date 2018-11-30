@@ -14,6 +14,7 @@ import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.layout.Pane;
 import javafx.scene.layout.StackPane;
+
 import java.net.URL;
 import java.util.ResourceBundle;
 
@@ -51,7 +52,18 @@ public class ViewController implements Initializable {
             new Person("Dikk", "Tesó", "d.gmail.com"),
             new Person("Kiss", "Mukk", "m.gmail.com"));
 
-    public void setTableData(){
+    @FXML
+    private void addContact(ActionEvent event) {
+        String email = inputEmail.getText();
+        if (email.length() > 3 && email.contains("@") && email.contains(".")) {
+            data.add(new Person(inputLastName.getText(), inputFirstName.getText(), email));
+            inputLastName.clear();
+            inputFirstName.clear();
+            inputEmail.clear();
+        }
+    }
+
+    public void setTableData() {
         TableColumn lastNameCol = new TableColumn("Vezetéknév");
         lastNameCol.setMaxWidth(100);
         lastNameCol.setCellFactory(TextFieldTableCell.forTableColumn());
@@ -126,8 +138,8 @@ public class ViewController implements Initializable {
                 String selectedMenu;
                 selectedMenu = selectedItem.getValue();
 
-                if(selectedMenu!=null){
-                    switch (selectedMenu){
+                if (selectedMenu != null) {
+                    switch (selectedMenu) {
                         case MENU_CONTACTS:
                             selectedItem.setExpanded(true);
                             break;
@@ -139,7 +151,7 @@ public class ViewController implements Initializable {
                             contactPane.setVisible(false);
                             exportPane.setVisible(true);
                             break;
-                        case MENU_EXIT :
+                        case MENU_EXIT:
                             System.exit(0);
                             break;
                     }
@@ -149,9 +161,12 @@ public class ViewController implements Initializable {
         });
     }
 
+
     @Override
     public void initialize(URL location, ResourceBundle resources) {
         setTableData();
         setMenuData();
+        PdfGeneration pdfCreation = new PdfGeneration();
+        pdfCreation.pdfGeneration("fajlnev", "Tartalom");
     }
 }
