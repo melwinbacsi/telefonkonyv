@@ -6,14 +6,19 @@ import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
+import javafx.geometry.Pos;
 import javafx.scene.Node;
 import javafx.scene.control.*;
 import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.scene.control.cell.TextFieldTableCell;
+import javafx.scene.control.TableColumn;
+
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
+import javafx.scene.layout.AnchorPane;
 import javafx.scene.layout.Pane;
 import javafx.scene.layout.StackPane;
+import javafx.scene.layout.VBox;
 
 import java.net.URL;
 import java.util.ResourceBundle;
@@ -34,12 +39,16 @@ public class ViewController implements Initializable {
     StackPane menuPane;
     @FXML
     Pane contactPane;
-    @FXML
+        @FXML
     Pane exportPane;
     @FXML
     TextField inputExport;
     @FXML
     Button exportButton;
+    @FXML
+    AnchorPane anchor;
+    @FXML
+    SplitPane mainSplit;
 
     private final String MENU_CONTACTS = "Kontaktok";
     private final String MENU_LIST = "Lista";
@@ -47,66 +56,74 @@ public class ViewController implements Initializable {
     private final String MENU_EXIT = "Kilépés";
 
 
-    private final ObservableList<Person> data = FXCollections.observableArrayList(
-            new Person("Szabó", "Gyula", "gy.gmail.com"),
-            new Person("Dikk", "Tesó", "d.gmail.com"),
-            new Person("Kiss", "Mukk", "m.gmail.com"));
+    private final ObservableList<Person> data = FXCollections.observableArrayList();
+
+    DB db = new DB();
 
     @FXML
     private void addContact(ActionEvent event) {
         String email = inputEmail.getText();
         if (email.length() > 3 && email.contains("@") && email.contains(".")) {
-            data.add(new Person(inputLastName.getText(), inputFirstName.getText(), email));
+            Person newPerson = new Person(inputLastName.getText(), inputFirstName.getText(), email);
+            data.add(newPerson);
+            db.addContact(newPerson);
             inputLastName.clear();
             inputFirstName.clear();
             inputEmail.clear();
+        }else{
+            alert("hibás e-mail cím");
+        }
+    }
+
+    @FXML
+    private void exportList(ActionEvent event) {
+        String fileName = inputExport.getText();
+        fileName = fileName.replaceAll("\\s+", "");
+        if (fileName != null && !fileName.equals("")) {
+
+            PdfGeneration pdfCreation = new PdfGeneration();
+            pdfCreation.pdfGeneration(fileName, data);
+        }else{
+            alert("adj meg egy fájlnevet");
         }
     }
 
     public void setTableData() {
         TableColumn lastNameCol = new TableColumn("Vezetéknév");
-        lastNameCol.setMaxWidth(100);
+        lastNameCol.setMinWidth(100);
         lastNameCol.setCellFactory(TextFieldTableCell.forTableColumn());
         lastNameCol.setCellValueFactory(new PropertyValueFactory<Person, String>("lastName"));
 
-        lastNameCol.setOnEditCommit(
-                new EventHandler<TableColumn.CellEditEvent<Person, String>>() {
-                    @Override
-                    public void handle(TableColumn.CellEditEvent<Person, String> event) {
-                        ((Person) event.getTableView().getItems().get(event.getTablePosition().getRow())).setLastName(event.getNewValue());
-                    }
-                }
-        );
+        lastNameCol.setOnEditCommit((EventHandler<TableColumn.CellEditEvent<Person, String>>) t -> {
+            Person actualPerson = t.getTableView().getItems().get(t.getTablePosition().getRow());
+            actualPerson.setLastName(t.getNewValue());
+            db.updateContact(actualPerson);
+        });
 
         TableColumn firstNameCol = new TableColumn("Keresztnév");
-        firstNameCol.setMaxWidth(100);
+        firstNameCol.setMinWidth(100);
         firstNameCol.setCellFactory(TextFieldTableCell.forTableColumn());
         firstNameCol.setCellValueFactory(new PropertyValueFactory<Person, String>("firstName"));
 
-        lastNameCol.setOnEditCommit(
-                new EventHandler<TableColumn.CellEditEvent<Person, String>>() {
-                    @Override
-                    public void handle(TableColumn.CellEditEvent<Person, String> event) {
-                        ((Person) event.getTableView().getItems().get(event.getTablePosition().getRow())).setFirstName(event.getNewValue());
-                    }
-                }
-        );
+        firstNameCol.setOnEditCommit((EventHandler<TableColumn.CellEditEvent<Person, String>>) event -> {
+            Person actualPerson = event.getTableView().getItems().get(event.getTablePosition().getRow());
+            actualPerson.setFirstName(event.getNewValue());
+            db.updateContact(actualPerson);
+        });
 
         TableColumn emailCol = new TableColumn("E-mail");
-        emailCol.setMaxWidth(200);
+        emailCol.setMinWidth(200);
         emailCol.setCellFactory(TextFieldTableCell.forTableColumn());
         emailCol.setCellValueFactory(new PropertyValueFactory<Person, String>("email"));
 
-        lastNameCol.setOnEditCommit(
-                new EventHandler<TableColumn.CellEditEvent<Person, String>>() {
-                    @Override
-                    public void handle(TableColumn.CellEditEvent<Person, String> event) {
-                        ((Person) event.getTableView().getItems().get(event.getTablePosition().getRow())).setEmail(event.getNewValue());
-                    }
-                }
-        );
+        emailCol.setOnEditCommit((EventHandler<TableColumn.CellEditEvent<Person, String>>) event -> {
+            Person actualPerson = event.getTableView().getItems().get(event.getTablePosition().getRow());
+            actualPerson.setEmail(event.getNewValue());
+            db.updateContact(actualPerson);
+        });
 
         table.getColumns().addAll(lastNameCol, firstNameCol, emailCol);
+        data.addAll(db.getAllContacts());
         table.setItems(data);
     }
 
@@ -161,12 +178,33 @@ public class ViewController implements Initializable {
         });
     }
 
+    private void alert(String text){
+        mainSplit.setDisable(true);
+        mainSplit.setOpacity(0.4);
+
+        Label label = new Label(text);
+        Button alertButton = new Button("OK");
+        VBox vbox = new VBox(label, alertButton);
+        vbox.setAlignment(Pos.CENTER);
+
+        alertButton.setOnAction(new EventHandler<ActionEvent>() {
+            @Override
+            public void handle(ActionEvent event) {
+                mainSplit.setDisable(false);
+                mainSplit.setOpacity(1);
+                vbox.setVisible(false);
+            }
+        });
+
+        anchor.getChildren().add(vbox);
+        anchor.setTopAnchor(vbox, 300.0);
+        anchor.setLeftAnchor(vbox, 300.0);
+    }
+
 
     @Override
     public void initialize(URL location, ResourceBundle resources) {
         setTableData();
         setMenuData();
-        PdfGeneration pdfCreation = new PdfGeneration();
-        pdfCreation.pdfGeneration("fajlnev", "Tartalom");
     }
 }

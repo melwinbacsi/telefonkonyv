@@ -5,10 +5,10 @@
 <?import javafx.scene.layout.*?>
 
 
-<AnchorPane id="AnchorPane" fx:id="AnchorPane" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="600.0" prefWidth="650.0" xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1" fx:controller="ViewController">
+<AnchorPane id="anchor" fx:id="anchor" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="600.0" prefWidth="650.0" xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1" fx:controller="ViewController">
     <children>
         <Label layoutX="283.0" layoutY="8.0" prefHeight="28.0" prefWidth="84.0" text="Telefonkönyv" />
-        <SplitPane dividerPositions="0.281505728314239" layoutY="49.0" prefHeight="551.0" prefWidth="650.0">
+        <SplitPane id="mainSplit" fx:id="mainSplit" dividerPositions="0.281505728314239" layoutY="49.0" prefHeight="551.0" prefWidth="650.0">
             <items>
                 <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="160.0" prefWidth="100.0">
                     <children>
@@ -19,7 +19,7 @@
                     <children>
                   <Pane id="exportPane" fx:id="exportPane" prefHeight="551.0" prefWidth="463.0">
                      <children>
-                        <Button id="exportButton" fx:id="exportButton" layoutX="188.0" layoutY="230.0" mnemonicParsing="false" text="PDF mentése" />
+                        <Button id="exportButton" fx:id="exportButton" onAction="#exportList" layoutX="188.0" layoutY="230.0" mnemonicParsing="false" text="PDF mentése" />
                         <TextField id="inputExport" fx:id="inputExport" layoutX="114.0" layoutY="182.0" prefHeight="25.0" prefWidth="235.0" />
                         <Label layoutX="206.0" layoutY="152.0" text="Fájl neve:" />
                         <Label layoutX="118.0" layoutY="35.0" text="Exportálás PDF-be">
@@ -34,6 +34,8 @@
                                     <placeholder>
                                         <Label text="Nincs adat" />
                                     </placeholder>
+                                    <columns>
+                                    </columns>
                                     <columns>
                                     </columns>
                                 </TableView>
